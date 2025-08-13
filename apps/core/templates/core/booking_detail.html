@@ -1,0 +1,15 @@
+<h2>Rezervasyon Detayı</h2>
+<p>Durum: {{ booking.status }}</p>
+<p>Bisiklet: {{ booking.bike }}</p>
+<p>Planlanan: {{ booking.start_at }} → {{ booking.end_at }}</p>
+<p>Planlanan Ücret: {{ booking.planned_price }} {{ booking.pricing.currency }}</p>
+{% if booking.status == "CONFIRMED" or booking.status == "ACTIVE" %}
+  <form method="post" action="{% url 'booking_mark_returned_by_user' booking.id %}">
+    {% csrf_token %}
+    <button type="submit">Teslim Ettim</button>
+  </form>
+{% endif %}
+{% if booking.status == "RETURNED" %}
+  <p>Gecikme Cezası: {{ booking.penalty_amount }} {{ booking.pricing.currency }}</p>
+  <p>Toplam: {{ booking.total_price }} {{ booking.pricing.currency }}</p>
+{% endif %}

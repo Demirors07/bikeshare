@@ -1,0 +1,9 @@
+<h2>Görevli Teslim Onayı</h2>
+<p>Kullanıcı: {{ booking.user }}</p>
+<p>Bisiklet: {{ booking.bike }}</p>
+<p>Süre: {{ booking.start_at }} → {{ booking.end_at }}</p>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Onayla</button>
+</form>
