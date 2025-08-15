@@ -1,0 +1,79 @@
+{% extends 'core/base.html' %}
+{% load humanize %}
+{% block title %}Sürüşlerim{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2 class="mb-4">Aktif Sürüşlerim</h2>
+  {% if active_bookings %}
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Bisiklet</th>
+          <th>İstasyon</th>
+          <th>Başlangıç</th>
+          <th>Bitiş</th>
+          <th>Planlanan Ücret</th>
+          <th>İşlem</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in active_bookings %}
+        <tr>
+          <td>{{ booking.bike.tag }}</td>
+          <td>{{ booking.station.name }}</td>
+          <td>{{ booking.start_at|date:"d.m.Y H:i" }}</td>
+          <td>{{ booking.end_at|date:"d.m.Y H:i" }}</td>
+          <td>{{ booking.planned_price }} {{ booking.pricing.currency }}</td>
+          <td>
+            <a href="{% url 'booking_return' booking.id %}" class="btn btn-warning btn-sm">Teslim Ettim</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Aktif bir sürüşünüz yok.</p>
+  {% endif %}
+
+  <hr class="my-5">
+
+  <h2 class="mb-4">Geçmiş Sürüşlerim</h2>
+  {% if past_bookings %}
+    <table class="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th>Bisiklet</th>
+          <th>Başlangıç</th>
+          <th>Bitiş</th>
+          <th>Teslim Zamanı</th>
+          <th>Planlanan Ücret</th>
+          <th>Ceza</th>
+          <th>Toplam Ücret</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in past_bookings %}
+        <tr>
+          <td>{{ booking.bike.tag }}</td>
+          <td>{{ booking.start_at|date:"d.m.Y H:i" }}</td>
+          <td>{{ booking.end_at|date:"d.m.Y H:i" }}</td>
+          <td>
+            {% if booking.actual_return_at %}
+              {{ booking.actual_return_at|date:"d.m.Y H:i" }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>{{ booking.planned_price }} {{ booking.pricing.currency }}</td>
+          <td>{{ booking.penalty_amount }} {{ booking.pricing.currency }}</td>
+          <td>{{ booking.total_price }} {{ booking.pricing.currency }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Geçmiş sürüşünüz bulunmuyor.</p>
+  {% endif %}
+</div>
+{% endblock %}

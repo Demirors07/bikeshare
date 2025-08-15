@@ -1,0 +1,77 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Ana Sayfa | BikeShare{% endblock %}
+
+{% block content %}
+    <div class="text-center">
+        <h1>Bisiklet Ödünç Alma Sistemine Hoş Geldiniz 🚲</h1>
+        <p class="lead">Şehir içinde hızlı, ekonomik ve çevreci ulaşım!</p>
+        <a href="{% url 'booking_create' %}" class="btn btn-success btn-lg mt-3" data-bs-toggle="modal" data-bs-target="#bookingModal">
+            Sürmeye başla</a>
+    </div>
+<!-- Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="bookingModalLabel">Bisiklet Rezervasyonu</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-form-content">
+          <!-- Form AJAX ile buraya yüklenecek -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const bookingModalEl = document.getElementById('bookingModal');
+  const bookingModal = new bootstrap.Modal(bookingModalEl);
+
+  // Butona tıklanınca formu AJAX ile çek
+  document.querySelector('[data-bs-target="#bookingModal"]').addEventListener('click', (e) => {
+    e.preventDefault();
+
+    fetch("{% url 'booking_create' %}")
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById("modal-form-content").innerHTML = data.html;
+        attachFormSubmit();  // Submit işleyici
+        bookingModal.show(); // ✅ Modal'ı aç
+      });
+  });
+
+  function attachFormSubmit() {
+    const form = document.getElementById("bookingForm");
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      fetch("{% url 'booking_create' %}", {
+        method: "POST",
+        body: formData,
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          bookingModal.hide();
+          window.location.href = data.redirect_url;
+        } else {
+          document.getElementById("modal-form-content").innerHTML = data.html;
+          attachFormSubmit();  // Tekrar bağla
+        }
+      });
+    });
+  }
+});
+</script>
+{% endblock %}
+
+
+
+

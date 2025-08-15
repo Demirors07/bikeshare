@@ -22,9 +22,9 @@ def find_available_bike(station, start_at, end_at):
     Çakışma: rezervasyonun CONFIRMED/ACTIVE/RETURNED (gerçek dönüş zamanı end_at'tan önce olsa bile plan içinde işgal sayılır)
     """
     busy_bike_ids = Booking.objects.filter(
-        status__in=["CONFIRMED","ACTIVE"],
-    ).filter(
-        # interval overlap: (start < other_end) and (end > other_start)
+        status__in=["CONFIRMED", "ACTIVE"],
+        bike__isnull=False,
+        bike__station=station,
         start_at__lt=end_at,
         end_at__gt=start_at,
     ).values_list("bike_id", flat=True)

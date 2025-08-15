@@ -1,7 +1,49 @@
+{% extends 'core/base.html' %}
 {% load static %}
-<h2>Bisiklet Rezervasyonu</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Onayla</button>
-</form>
+
+{% block title %}Bisiklet Rezervasyonu{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2 class="mb-4">Bisiklet Rezervasyonu</h2>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="mb-3">
+      {{ form.station.label_tag }}
+      {{ form.station }}
+    </div>
+    <div class="mb-3">
+      {{ form.pricing.label_tag }}
+      {{ form.pricing }}
+    </div>
+    <div class="mb-3">
+      {{ form.start_at.label_tag }}
+      <input type="datetime-local" name="start_at" id="id_start_at" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      {{ form.end_at.label_tag }}
+      <input type="datetime-local" name="end_at" id="id_end_at" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-success">Onayla</button>
+  </form>
+</div>
+{% endblock %}
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const now = new Date();
+    now.setSeconds(0, 0);  // saniyeleri sıfırla
+
+    const formatted = now.toISOString().slice(0,16); // 'YYYY-MM-DDTHH:MM'
+
+    document.getElementById("id_start_at").min = formatted;
+    document.getElementById("id_end_at").min = formatted;
+  });
+</script>

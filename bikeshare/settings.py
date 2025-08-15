@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'apps.core',
 ]
 
@@ -66,6 +67,9 @@ TEMPLATES = [
         },
     },
 ]
+
+# Authentication settings
+LOGIN_URL = 'login'
 
 WSGI_APPLICATION = 'bikeshare.wsgi.application'
 

@@ -1,13 +1,16 @@
 from decimal import Decimal
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.urls import reverse
 from django.db import transaction
 
-from .forms import BookingForm, ReturnConfirmForm, SignUpForm
+from .forms import BookingForm, ReturnConfirmForm, SignUpForm, LoginForm
 from .models import Booking, Payment
 from .services import (
     find_available_bike,
@@ -15,6 +18,51 @@ from .services import (
     compute_penalty,
     send_sms,
 )
+
+# 🏠 Anasayfa
+def home(request):
+    return render(request, 'core/home.html')
+
+
+# 🔑 Giriş yap
+def login_view(request):
+    form = LoginForm(request.POST or None)
+
+    if request.method == 'POST':
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('home')
+            else:
+                form.add_error(None, 'Kullanıcı adı veya şifre yanlış.')
+
+    return render(request, 'core/login.html', {'form': form})
+
+# 🚪 Çıkış yap
+def logout_view(request):
+    logout(request)
+    return redirect('home')
+
+# 📅 Rezervasyon (Login zorunlu)
+#@login_required(login_url='login')
+#def booking_view(request):
+ #   return render(request, 'booking.html')
+
+# ℹ️ Hakkımızda
+def about_view(request):
+    return render(request, 'core/about.html')
+
+# ❓ Sıkça Sorulan Sorular
+def contact_view(request):
+    return render(request, 'core/contact.html')
+
+# ❓ Sıkça Sorulan Sorular
+def faq_view(request):
+    return render(request, 'core/faq.html')
 
 @login_required
 def booking_create(request):
@@ -60,9 +108,14 @@ def booking_create(request):
                 )
 
                 messages.success(request, "Rezervasyon onaylandı! SMS ile bilgi gönderildi.")
-                return redirect("booking_detail", booking_id=booking.id)
+                return JsonResponse({
+                    "success": True,
+                    "redirect_url": reverse("my_bookings")  # ✅ buraya yönlendirilecek
+                })
     else:
         form = BookingForm()
+        html = render_to_string("core/partials/booking_form.html", {"form": form}, request=request)
+        return JsonResponse({"html": html})
 
     return render(request, "core/booking_create.html", {"form": form})
 
@@ -85,7 +138,7 @@ def booking_mark_returned_by_user(request, booking_id):
     booking.save(update_fields=["actual_return_at_user", "status"])
 
     messages.success(request, "Teslim talebiniz alındı. Görevli onayı bekleniyor.")
-    return redirect("booking_detail", booking_id=booking.id)
+    return redirect("my_bookings")
 
 
 def is_staff(user):
@@ -131,8 +184,21 @@ def signup_view(request):
         if form.is_valid():
             user = form.save()
             login(request, user)  # kayıt olur olmaz giriş yap
-            return redirect("booking_create")
+            return redirect('home')
     else:
         form = SignUpForm()
     return render(request, "core/signup.html", {"form": form})
+
+@login_required
+def my_bookings_view(request):
+    active_bookings = Booking.objects.filter(user=request.user, status=Booking.Status.CONFIRMED)
+    past_bookings = Booking.objects.filter(
+        user=request.user,
+        status__in=[Booking.Status.RETURNED, Booking.Status.CANCELED]
+    )
+
+    return render(request, 'core/includes/my_bookings.html', {
+        'active_bookings': active_bookings,
+        'past_bookings': past_bookings
+    })
 
