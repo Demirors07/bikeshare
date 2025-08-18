@@ -2,8 +2,32 @@
 <p>Kullanıcı: {{ booking.user }}</p>
 <p>Bisiklet: {{ booking.bike }}</p>
 <p>Süre: {{ booking.start_at }} → {{ booking.end_at }}</p>
+<h2>Rezervasyon Teslim Onayı</h2>
+
+{% if not booking.actual_return_at_user %}
+    <div class="alert alert-warning">
+        Kullanıcı henüz teslim ettiğini belirtmedi. Teslim onayı veremezsiniz.
+    </div>
+{% endif %}
+
 <form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Onayla</button>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox"
+               name="confirm_physical_return"
+               id="confirm_physical_return"
+               {% if not booking.actual_return_at_user %}disabled{% endif %}>
+        <label class="form-check-label" for="confirm_physical_return">
+            Fiziksel teslimi onaylıyorum
+        </label>
+    </div>
+
+    <br>
+
+    <button type="submit" class="btn btn-primary"
+            {% if not booking.actual_return_at_user %}disabled{% endif %}>
+        Teslimi Onayla
+    </button>
 </form>

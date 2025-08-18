@@ -5,6 +5,14 @@
 {% block content %}
     <div class="text-center">
         <h1>Bisiklet Ödünç Alma Sistemine Hoş Geldiniz 🚲</h1>
+        <p>{{ request.method }}</p>
+        <p>{{ request.POST }}</p>
+        <p>{{ request.GET }}</p>
+        <p>{{ request.content_type }}</p>
+        <p>{{ request.encoding }}</p>
+        <p>{{ request.scheme }}</p>
+        <p>{{ request.resolver_match }}</p>
+
         <p class="lead">Şehir içinde hızlı, ekonomik ve çevreci ulaşım!</p>
         <a href="{% url 'booking_create' %}" class="btn btn-success btn-lg mt-3" data-bs-toggle="modal" data-bs-target="#bookingModal">
             Sürmeye başla</a>
@@ -28,6 +36,7 @@
 {% endblock %}
 {% block scripts %}
 <script>
+    const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
 document.addEventListener("DOMContentLoaded", function () {
   const bookingModalEl = document.getElementById('bookingModal');
   const bookingModal = new bootstrap.Modal(bookingModalEl);
@@ -35,6 +44,12 @@ document.addEventListener("DOMContentLoaded", function () {
   // Butona tıklanınca formu AJAX ile çek
   document.querySelector('[data-bs-target="#bookingModal"]').addEventListener('click', (e) => {
     e.preventDefault();
+
+  if (!isAuthenticated) {
+  const nextUrl = "{{ request.path }}";
+  window.location.href = "{% url 'login' %}?next=" + encodeURIComponent(nextUrl);
+  return;
+}
 
     fetch("{% url 'booking_create' %}")
       .then(response => response.json())

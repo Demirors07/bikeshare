@@ -11,12 +11,14 @@
                 <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Ana Sayfa</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">Hakkında</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">İletişim</a></li>
-                {% if user.is_authenticated %}
+                {% if user.groups.first.name == "user" %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'my_bookings' %}">Sürüşlerim</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Çıkış Yap</a></li>
-                {% else %}
+                {% endif %}
+                {% if not user.is_authenticated %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Giriş Yap</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">Üye Ol</a></li>
+                {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Çıkış Yap</a></li>
                 {% endif %}
             </ul>
         </div>

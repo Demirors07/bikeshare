@@ -148,6 +148,9 @@ def is_staff(user):
 @user_passes_test(is_staff)
 def staff_confirm_return(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
+    if not booking.actual_return_at_user:
+        messages.error(request, "Kullanıcı henüz teslim etmediği için bu işlem yapılamaz.")
+        return redirect("staff_booking_view", booking_id=booking.id)
     if request.method == "POST":
         form = ReturnConfirmForm(request.POST)
         if form.is_valid():
